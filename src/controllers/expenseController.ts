@@ -6,12 +6,12 @@ import { ResultSetHeader } from "mysql2";
 
 export const createExpense = async (req: AuthRequest, res: Response) => {
   try {
-    const { amount, category, description, expense_date } = req.body;
+    const { amount, category, description, expense_date , source="Manual"} = req.body;
 
     const userId = req.user?.id;
     await pool.query(
-      "INSERT INTO expenses( amount, category, description, expense_date, user_id) VALUES(?,?,?,?,?)",
-      [amount, category, description, expense_date, userId],
+      "INSERT INTO expenses( amount, category, description, expense_date, user_id, source) VALUES(?,?,?,?,?,?)",
+      [amount, category, description, expense_date, userId, source],
     );
     res.status(201).json({
       success: true,
@@ -30,9 +30,20 @@ export const getExpenses = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     const [expenses] = await pool.query<RowDataPacket[]>(
-      "SELECT * FROM expenses WHERE user_id=? ORDER BY expense_date DESC",
-      [userId],
-    );
+  `
+  SELECT
+      id,
+      amount,
+      category,
+      description,
+      DATE_FORMAT(expense_date, '%Y-%m-%d') AS expense_date,
+      source
+  FROM expenses
+  WHERE user_id = ?
+  ORDER BY expense_date DESC, id DESC
+  `,
+  [userId],
+);
     res.status(200).json({
       success: true,
       expenses,
@@ -108,14 +119,20 @@ export const getExpenseById = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id;
 
     const [expenses] = await pool.query<RowDataPacket[]>(
-      `
-            SELECT *
-            FROM expenses
-            WHERE id = ?
-            AND user_id = ?
-            `,
-      [expenseId, userId],
-    );
+  `
+  SELECT
+      id,
+      amount,
+      category,
+      description,
+      DATE_FORMAT(expense_date, '%Y-%m-%d') AS expense_date,
+      source
+  FROM expenses
+  WHERE id = ?
+    AND user_id = ?
+  `,
+  [expenseId, userId],
+);
 
     if (expenses.length === 0) {
       return res.status(404).json({
