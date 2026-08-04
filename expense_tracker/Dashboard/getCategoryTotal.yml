@@ -1,0 +1,18 @@
+info:
+  name: getCategoryTotal
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: http://localhost:5000/api/dashboard/category-totals
+  headers:
+    - name: Authorization
+      value: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJnYXJyZXRAZ21haWwuY29tIiwiaWF0IjoxNzgxMDc0ODA5LCJleHAiOjE3ODExNjEyMDl9.wbanqX9MGHHJ8un5Y8-MNd4RFdYphi_KTEkjmnKPEc4
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

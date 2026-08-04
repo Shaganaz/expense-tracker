@@ -1,0 +1,27 @@
+info:
+  name: createExpenses
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: http://localhost:5000/api/expenses
+  headers:
+    - name: Authorization
+      value: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJnYXJyZXRAZ21haWwuY29tIiwiaWF0IjoxNzgxMDc0ODA5LCJleHAiOjE3ODExNjEyMDl9.wbanqX9MGHHJ8un5Y8-MNd4RFdYphi_KTEkjmnKPEc4
+  body:
+    type: json
+    data: |-
+      {
+        "amount": 2000,
+        "category": "Dress",
+        "description": "GYM",
+        "expense_date": "2026-06-10"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
