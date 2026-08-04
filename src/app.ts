@@ -4,6 +4,7 @@ import authRoutes from './routes/authRoutes';
 import protectedRoute from './routes/protectedRoute';
 import expenseRoutes from './routes/expenseRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
+import budgetRoutes from "./routes/budgetRoutes";
 
 const app = express();
 
@@ -13,4 +14,5 @@ app.use('/api/auth', authRoutes);
 app.use('/api/protected', protectedRoute);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use("/api/budget", budgetRoutes);
 export default app;
