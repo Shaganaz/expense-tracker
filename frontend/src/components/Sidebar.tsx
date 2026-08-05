@@ -1,47 +1,61 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { FaHome, FaWallet, FaCog } from "react-icons/fa";
+
+import "../styles/sidebar.css";
 
 function Sidebar() {
+  const location = useLocation();
+
   return (
-    <div
-      style={{
-        width: "220px",
-        background: "#2d3748",
-        color: "white",
-        padding: "20px",
-      }}
-    >
-      <h2>Expense Tracker</h2>
+    <aside className="sidebar">
+      <div>
+        <h2 className="sidebar-logo">
+          Expense Tracker
+        </h2>
 
-      <hr />
+        <p className="sidebar-subtitle">
+          Track • Save • Grow
+        </p>
 
-      <p>
-        <Link
-          to="/dashboard"
-          style={{ color: "white" }}
-        >
-          Dashboard
-        </Link>
-      </p>
+        <nav className="sidebar-nav">
+          <Link
+            to="/dashboard"
+            className={
+              location.pathname === "/dashboard"
+                ? "sidebar-link active"
+                : "sidebar-link"
+            }
+          >
+            <FaHome />
+            Dashboard
+          </Link>
 
-      <p>
-        <Link
-          to="/transactions"
-          style={{ color: "white" }}
-        >
-          Transactions
-        </Link>
-      </p>
+          <Link
+            to="/transactions"
+            className={
+              location.pathname === "/transactions"
+                ? "sidebar-link active"
+                : "sidebar-link"
+            }
+          >
+            <FaWallet />
+            Transactions
+          </Link>
 
-      <p>
-        <Link
-          to="/settings"
-          style={{ color: "white" }}
-        >
-          Settings
-        </Link>
-      </p>
-
-    </div>
+          <Link
+            to="/settings"
+            className={
+              location.pathname === "/settings"
+                ? "sidebar-link active"
+                : "sidebar-link"
+            }
+          >
+            <FaCog />
+            Settings
+          </Link>
+        </nav>
+      </div>
+    </aside>
   );
 }
 

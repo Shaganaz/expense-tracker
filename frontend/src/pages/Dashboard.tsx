@@ -6,6 +6,7 @@ import RecentActivity from "../components/RecentActivity";
 import HighestSpendingDayModal from "../components/HighestSpendingDayModal";
 import ExpensePieChart from "../components/ExpensePieChart";
 import type { Expense } from "../types/transactions";
+import "../styles/dashboard.css";
 
 function Dashboard() {
   //fetching userProfile
@@ -36,13 +37,13 @@ function Dashboard() {
   };
 
   const fetchExpenses = async () => {
-  try {
-    const response = await api.get("/expenses");
-    setExpenses(response.data.expenses);
-  } catch (error) {
-    console.error(error);
-  }
-};
+    try {
+      const response = await api.get("/expenses");
+      setExpenses(response.data.expenses);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const fetchBudget = async () => {
     try {
@@ -78,7 +79,6 @@ function Dashboard() {
   useEffect(() => {
     fetchBudget();
   }, [selectedMonth]);
-
 
   //Filtering
   const filteredExpenses = selectedMonth
@@ -127,23 +127,12 @@ function Dashboard() {
     (expense) => expense.expense_date === highestSpendingDay[0],
   );
 
-  const recentActivity = Object.entries(spendingByDay)
-
-    .sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime())
-
-    .slice(0, 3)
-
-    .map(([date, total]) => {
-      const transactionCount = filteredExpenses.filter(
-        (expense) => expense.expense_date === date,
-      ).length;
-
-      return {
-        date,
-        total,
-        transactionCount,
-      };
-    });
+  const recentActivity = [...filteredExpenses]
+    .sort(
+      (a, b) =>
+        new Date(b.expense_date).getTime() - new Date(a.expense_date).getTime(),
+    )
+    .slice(0, 3);
   // Calculate total expense for each category
 
   const spendingByCategory = filteredExpenses.reduce(
@@ -220,71 +209,94 @@ function Dashboard() {
   };
 
   return (
-    <div>
-      <h1>Dashboard</h1>
+    <div className="dashboard-container">
+      <div className="dashboard-header">
+        <div>
+          <div className="dashboard-title">
+            <h1>Expense Dashboard</h1>
 
-      <h2>Welcome back, {user?.email}</h2>
+            <p>Track your spending and stay within your budget ✨</p>
+          </div>
+        </div>
 
-      <br />
+        <div className="month-picker">
+          <label>🗓️ Month</label>
 
-      <label>Select Month </label>
-
-      <input
-        type="month"
-        value={selectedMonth}
-        onChange={(e) => {
-          setSelectedMonth(e.target.value);
-        }}
-      />
-
-      <br />
-      <br />
+          <input
+            type="month"
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+          />
+        </div>
+      </div>
 
       <div className="stats-grid">
-        <StatCard title="Income" value={`₹${income}`} />
+        <StatCard title="Income" value={`₹${income}`} icon="💰" />
 
-        <StatCard title="Budget" value={`₹${budget}`} />
+        <StatCard title="Budget" value={`₹${budget}`} icon="🐷" />
 
-        <StatCard title="Expenses" value={`₹${totalExpenses}`} />
+        <StatCard title="Expenses" value={`₹${totalExpenses}`} icon="💸" />
 
-        <StatCard title="Remaining" value={`₹${remaining}`} />
+        <StatCard title="Remaining" value={`₹${remaining}`} icon="✨" />
       </div>
-
-      <br />
 
       <div className="analytics-section">
-        <div className="pie-chart">
-          <h3>Expense Distribution</h3>
+       <div className="analytics-card">
 
-          <ExpensePieChart data={pieChartData} />
-        </div>
+  <h3>Expense Distribution</h3>
 
-        <div>
-          <InsightCard
-            title="Highest Spending Category"
-            main={highestSpendingCategory[0]}
-            sub={`₹${highestSpendingCategory[1]}`}
-            message={getCategoryMessage(highestSpendingCategory[0])}
-          />
+  <div className="analytics-content">
 
-          <br />
+    <ExpensePieChart data={pieChartData} />
 
-          <InsightCard
-            title="Highest Spending Day"
-            main={formattedHighestDay}
-            sub={`₹${highestSpendingDay[1]}`}
-            onClick={() => setShowHighestSpendingDayModal(true)}
-          />
-        </div>
+    <div className="analytics-insights">
+
+      <div className="mini-card">
+
+        <h4>🛍 Highest Spending Category</h4>
+
+        <h2>{highestSpendingCategory[0]}</h2>
+
+        <p>₹{highestSpendingCategory[1]}</p>
+
+        <small>
+          {getCategoryMessage(highestSpendingCategory[0])}
+        </small>
+
       </div>
 
-      <br />
+      <div
+        className="mini-card clickable"
+        onClick={() =>
+          setShowHighestSpendingDayModal(true)
+        }
+      >
+
+        <h4>🗓️ Highest Spending Day</h4>
+
+        <h2>{formattedHighestDay}</h2>
+
+        <p>₹{highestSpendingDay[1]}</p>
+
+        <small>View Transactions →</small>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+      </div>
+
       <HighestSpendingDayModal
         isOpen={showHighestSpendingDayModal}
         onClose={() => setShowHighestSpendingDayModal(false)}
         expenses={highestDayExpenses}
       />
-      <RecentActivity activities={recentActivity} />
+      <div className="recent-activity-card">
+        <RecentActivity activities={recentActivity} />
+      </div>
     </div>
   );
 }

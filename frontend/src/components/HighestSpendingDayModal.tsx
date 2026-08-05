@@ -1,11 +1,4 @@
-type Expense = {
-  id: number;
-  category: string;
-  description: string;
-  amount: number;
-  expense_date: string;
-};
-
+import type { Expense } from "../types/transactions";
 type HighestSpendingDayModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -20,41 +13,51 @@ function HighestSpendingDayModal({
 
   if (!isOpen) return null;
 
-  const total = expenses.reduce(
-    (sum, expense) => sum + Number(expense.amount),
-    0
-  );
-
   return (
     <div className="modal-overlay">
 
-      <div className="modal">
+      <div className="modal-card">
 
-        <h2>Highest Spending Day</h2>
+        <div className="modal-header">
 
-        <hr />
+          <h2>📅 Highest Spending Day</h2>
 
+          <button onClick={onClose}>✕</button>
+
+        </div>
+<div className="modal-table-header">
+  <span>Date</span>
+
+  <span>Category</span>
+
+  <span>Description</span>
+
+  <span>Amount</span>
+</div>
         {expenses.map((expense) => (
+  <div
+    key={expense.id}
+    className="modal-row"
+  >
+    <span className="modal-date">
+      {new Date(`${expense.expense_date}T00:00:00`).toLocaleDateString(
+        "en-GB",
+      )}
+    </span>
 
-          <div key={expense.id}>
+    <span className="modal-category">
+      {expense.category}
+    </span>
 
-            <h4>{expense.category}</h4>
+    <span className="modal-description">
+      {expense.description}
+    </span>
 
-            <p>{expense.description}</p>
-
-            <strong>₹{expense.amount}</strong>
-
-            <hr />
-
-          </div>
-
-        ))}
-
-        <h3>Total : ₹{total}</h3>
-
-        <button onClick={onClose}>
-          Close
-        </button>
+    <span className="modal-amount">
+      ₹{expense.amount}
+    </span>
+  </div>
+))}
 
       </div>
 

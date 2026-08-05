@@ -3,11 +3,13 @@ import api from "../services/api";
 import TransactionFilters from "../components/TransactionFilters";
 import TransactionSummary from "../components/TransactionSummary";
 import type { Expense, SortOption } from "../types/transactions";
+import TransactionTable from "../components/TransactionTable";
+import Pagination from "../components/Pagination";
+import ExpenseModal from "../components/ExpenseModal";
+import "../styles/transactions.css";
 
 function Transactions() {
-
   //State variables
-  const [search, setSearch] = useState("");
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().toISOString().slice(0, 7),
   );
@@ -32,6 +34,10 @@ function Transactions() {
       console.error(error);
     }
   };
+  // Load expenses on first render
+  useEffect(() => {
+    fetchExpenses();
+  }, []);
 
   //EVENT HANDLERS
   const handleAddExpense = async () => {
@@ -104,10 +110,6 @@ function Transactions() {
     }
   };
 
-    useEffect(() => {
-    fetchExpenses();
-  }, []);
-
   //Filtering
 
   const monthOptions = [
@@ -116,21 +118,18 @@ function Transactions() {
     .sort()
     .reverse();
 
-
   const filteredExpenses = expenses
-    .filter((expense) => {
-      const matchesSearch = expense.description
-        .toLowerCase()
-        .includes(search.toLowerCase());
+  .filter((expense) => {
+    const matchesMonth =
+      selectedMonth === "" ||
+      expense.expense_date.startsWith(selectedMonth);
 
-      const matchesMonth =
-        selectedMonth === "" || expense.expense_date.startsWith(selectedMonth);
+    const matchesCategory =
+      selectedCategory === "All" ||
+      expense.category === selectedCategory;
 
-      const matchesCategory =
-        selectedCategory === "All" || expense.category === selectedCategory;
-
-      return matchesSearch && matchesMonth && matchesCategory;
-    })
+    return matchesMonth && matchesCategory;
+  })
     .sort((a, b) => {
       switch (sortBy) {
         case "Newest":
@@ -156,8 +155,7 @@ function Transactions() {
       }
     });
 
-
- //Totals
+  //Totals
   const totalSpent = filteredExpenses.reduce(
     (total, expense) => total + Number(expense.amount),
     0,
@@ -165,7 +163,10 @@ function Transactions() {
 
   //Pagination
   const expensesPerPage = 5;
-  const totalPages = Math.ceil(filteredExpenses.length / expensesPerPage);
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredExpenses.length / expensesPerPage),
+  );
 
   const startIndex = (currentPage - 1) * expensesPerPage;
 
@@ -173,40 +174,115 @@ function Transactions() {
 
   const currentExpenses = filteredExpenses.slice(startIndex, endIndex);
 
-  
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedMonth, selectedCategory, sortBy]);
 
+  const formattedMonth = new Date(`${selectedMonth}-01`).toLocaleDateString(
+  "en-IN",
+  {
+    month: "long",
+    year: "numeric",
+  },
+);
 
   return (
-    <div>
-      <h1>Transactions</h1>
+    <div className="transactions-container">
 
-      <div>
-        <button>+ Add Expense</button>
-      </div>
+  {/* Header */}
 
-      <TransactionFilters
-        search={search}
-        setSearch={setSearch}
-        selectedMonth={selectedMonth}
-        setSelectedMonth={setSelectedMonth}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        monthOptions={monthOptions}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
+  <div className="transactions-header">
+
+    <div className="transactions-title">
+
+      <h1>Expense Transactions</h1>
+
+      <p>
+        Manage, filter and organize your daily spending.
+      </p>
+
+    </div>
+
+    <button
+      className="add-expense-btn"
+      onClick={() => setShowForm(true)}
+    >
+      + Add Expense
+    </button>
+
+  </div>
+
+  {/* Filters */}
+
+  <div className="table-card">
+
+  <div className="filter-row">
+
+    <TransactionFilters
+      selectedMonth={selectedMonth}
+      setSelectedMonth={setSelectedMonth}
+      selectedCategory={selectedCategory}
+      setSelectedCategory={setSelectedCategory}
+      monthOptions={monthOptions}
+      sortBy={sortBy}
+      setSortBy={setSortBy}
+    />
+
+  </div>
+
+  <div className="table-summary">
+
+    <span className="summary-text">
+      ₹{totalSpent} Spent • {filteredExpenses.length} Transactions
+    </span>
+
+  </div>
+
+  <TransactionTable
+    expenses={currentExpenses}
+    onEdit={handleEdit}
+    onDelete={handleDelete}
+  />
+
+  <div className="pagination-wrapper">
+    <Pagination
+      currentPage={currentPage}
+      totalPages={totalPages}
+      onPrevious={() => {
+        if (currentPage > 1) {
+          setCurrentPage(currentPage - 1);
+        }
+      }}
+      onNext={() => {
+        if (currentPage < totalPages) {
+          setCurrentPage(currentPage + 1);
+        }
+      }}
+    />
+  </div>
+
+</div>
+
+    
+      <ExpenseModal
+        isOpen={showForm}
+        onClose={() => {
+          setShowForm(false);
+          setEditingExpenseId(null);
+        }}
+        onSave={handleAddExpense}
+        amount={amount}
+        setAmount={setAmount}
+        category={category}
+        setCategory={setCategory}
+        description={description}
+        setDescription={setDescription}
+        expenseDate={expenseDate}
+        setExpenseDate={setExpenseDate}
+        customCategory={customCategory}
+        setCustomCategory={setCustomCategory}
+        editingExpenseId={editingExpenseId}
       />
-
-      <div>
-        <TransactionSummary
-          selectedMonth={selectedMonth}
-          transactionCount={filteredExpenses.length}
-          totalSpent={totalSpent}
-        />
-      </div>
-
-      <div>Transaction Table</div>
-
-      <div>Pagination</div>
     </div>
   );
 }

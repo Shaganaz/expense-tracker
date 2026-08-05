@@ -1,45 +1,38 @@
-type Activity = {
-  date: string;
-  total: number;
-  transactionCount: number;
-};
+import { useNavigate } from "react-router-dom";
+import type { Expense } from "../types/transactions";
 
 type RecentActivityProps = {
-  activities: Activity[];
+  activities: Expense[];
 };
 
-function RecentActivity({
-  activities,
-}: RecentActivityProps) {
+function RecentActivity({ activities }: RecentActivityProps) {
+  const navigate = useNavigate();
+
   return (
     <div>
+      <div className="recent-header">
+        <h3>📝 Recent Transactions</h3>
 
-      <h3>Recent Activity</h3>
+        <button onClick={() => navigate("/transactions")}>View All →</button>
+      </div>
 
-      {activities.map(activity => (
+      {activities.map((expense) => (
+        <div key={expense.id} className="recent-item">
+          <span>
+            {new Date(`${expense.expense_date}T00:00:00`).toLocaleDateString(
+              "en-IN",
+              {
+                day: "numeric",
+                month: "short",
+              },
+            )}
+          </span>
 
-        <div
-          key={activity.date}
-        >
+          <span>{expense.category}</span>
 
-          <h4>{activity.date}</h4>
-
-          <p>
-            ₹{activity.total}
-          </p>
-
-          <small>
-            {activity.transactionCount}
-            {" "}
-            Transactions
-          </small>
-
-          <hr />
-
+          <strong>₹{expense.amount}</strong>
         </div>
-
       ))}
-
     </div>
   );
 }

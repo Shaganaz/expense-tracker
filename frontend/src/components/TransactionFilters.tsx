@@ -1,8 +1,6 @@
 import type { SortOption } from "../types/transactions";
 
 type TransactionFiltersProps = {
-  search: string;
-  setSearch: (value: string) => void;
 
   selectedMonth: string;
   setSelectedMonth: (value: string) => void;
@@ -17,8 +15,6 @@ type TransactionFiltersProps = {
 };
 
 function TransactionFilters({
-  search,
-  setSearch,
   selectedMonth,
   setSelectedMonth,
   selectedCategory,
@@ -29,31 +25,22 @@ function TransactionFilters({
 }: TransactionFiltersProps) {
   return (
     <div>
-      <input
-        type="text"
-        placeholder="🔍 Search transactions..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
 
-      <br />
-      <br />
+      <div className="filter-row">
 
-      <select
-        value={selectedMonth}
-        onChange={(e) => setSelectedMonth(e.target.value)}
-      >
-        <option value="">All Months</option>
-
-        {monthOptions.map((month) => (
-          <option key={month} value={month}>
-            {new Date(`${month}-01`).toLocaleDateString("en-IN", {
-              month: "long",
-              year: "numeric",
-            })}
-          </option>
-        ))}
-      </select>
+    <select
+      value={selectedMonth}
+      onChange={(e) => setSelectedMonth(e.target.value)}
+    >
+      {monthOptions.map((month) => (
+        <option key={month} value={month}>
+          {new Date(`${month}-01`).toLocaleDateString("en-IN", {
+            month: "long",
+            year: "numeric",
+          })}
+        </option>
+      ))}
+    </select>
 
       <select
         value={selectedCategory}
@@ -61,7 +48,7 @@ function TransactionFilters({
       >
         <option value="All">All Categories</option>
         <option value="Food">🍕 Food</option>
-        <option value="Travel">✈✈️Travel</option>
+        <option value="Travel">✈️Travel</option>
         <option value="Shopping">🛍️ Shopping</option>
         <option value="Fuel">⛽ Fuel</option>
         <option value="Bills">💡 Bills</option>
@@ -81,6 +68,7 @@ function TransactionFilters({
 
         <option value="Lowest">Lowest Amount</option>
       </select>
+    </div>
     </div>
   );
 }
