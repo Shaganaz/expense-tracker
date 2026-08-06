@@ -10,7 +10,7 @@ function TransactionTable({
   onDelete,
 }: TransactionTableProps) {
     return (
-  <table>
+  <table className="transaction-table">
 
     <thead>
       <tr>
@@ -26,27 +26,46 @@ function TransactionTable({
     {expenses.map((expense) => (
   <tr key={expense.id}>
 
-    <td>{expense.expense_date}</td>
+    <td>
+  {new Date(`${expense.expense_date}T00:00:00`).toLocaleDateString(
+    "en-IN",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    },
+  )}
+</td>
 
-    <td>{expense.category}</td>
+    <td>
+  <span className="category-pill">
+    {expense.category}
+  </span>
+</td>
 
     <td>{expense.description}</td>
 
-    <td>₹{expense.amount}</td>
+    <td className="amount-cell">
+  ₹{Number(expense.amount).toLocaleString("en-IN")}
+</td>
 
     <td>
-      <button
-  onClick={() => onEdit(expense)}
->
-  ✏️
-</button>
+    <span
+        className="edit-link"
+        onClick={() => onEdit(expense)}
+    >
+        Edit
+    </span>
 
-<button
-  onClick={() => onDelete(expense.id)}
->
-  🗑️
-</button>
-    </td>
+    {" | "}
+
+    <span
+        className="delete-link"
+        onClick={() => onDelete(expense.id)}
+    >
+        Delete
+    </span>
+</td>
 
   </tr>
 ))}

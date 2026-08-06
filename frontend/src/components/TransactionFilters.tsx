@@ -12,6 +12,8 @@ type TransactionFiltersProps = {
   setSortBy: (value: SortOption) => void;
 
   monthOptions: string[];
+
+  onAddExpense: () => void;
 };
 
 function TransactionFilters({
@@ -22,6 +24,7 @@ function TransactionFilters({
   sortBy,
   setSortBy,
   monthOptions,
+  onAddExpense,
 }: TransactionFiltersProps) {
   return (
     <div>
@@ -29,6 +32,7 @@ function TransactionFilters({
       <div className="filter-row">
 
     <select
+    className="month-select"
       value={selectedMonth}
       onChange={(e) => setSelectedMonth(e.target.value)}
     >
@@ -68,6 +72,12 @@ function TransactionFilters({
 
         <option value="Lowest">Lowest Amount</option>
       </select>
+       <button
+    className="add-expense-btn"
+    onClick={onAddExpense}
+  >
+    + Add Expense
+  </button>
     </div>
     </div>
   );

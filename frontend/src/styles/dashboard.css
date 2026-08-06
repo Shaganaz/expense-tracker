@@ -296,3 +296,20 @@
     font-weight:700;
     color:#D9468F;
 }
+
+.stat-card-button{
+    margin-top:14px;
+    width:100%;
+    padding:10px;
+    border:none;
+    border-radius:12px;
+    background:#FDE7F2;
+    color:#D9468F;
+    font-weight:600;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.stat-card-button:hover{
+    background:#F9D3E7;
+}

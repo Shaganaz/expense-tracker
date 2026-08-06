@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import StatCard from "../components/StatCard";
-import InsightCard from "../components/InsightCard";
+import IncomeModal from "../components/IncomeModal";
+import BudgetModal from "../components/BudgetModal";
 import RecentActivity from "../components/RecentActivity";
 import HighestSpendingDayModal from "../components/HighestSpendingDayModal";
 import ExpensePieChart from "../components/ExpensePieChart";
@@ -17,9 +18,12 @@ function Dashboard() {
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [budget, setBudget] = useState<number | null>(null);
-  const [editingBudget, setEditingBudget] = useState(false);
   const [budgetInput, setBudgetInput] = useState("");
-  const income = 50000;
+  const [income, setIncome] = useState<number | null>(null);
+  const [showIncomeModal, setShowIncomeModal] = useState(false);
+  const [showBudgetModal, setShowBudgetModal] = useState(false);
+
+const [incomeInput, setIncomeInput] = useState("");
   const [showHighestSpendingDayModal, setShowHighestSpendingDayModal] =
     useState(false);
   const [selectedMonth, setSelectedMonth] = useState(
@@ -55,6 +59,16 @@ function Dashboard() {
     }
   };
 
+  const fetchIncome = async () => {
+  try {
+    const response = await api.get(`/income/${selectedMonth}`);
+
+    setIncome(response.data.income);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
   const saveBudget = async () => {
     try {
       await api.post("/budget", {
@@ -65,11 +79,26 @@ function Dashboard() {
 
       setBudget(Number(budgetInput));
 
-      setEditingBudget(false);
+      setShowBudgetModal(false);
     } catch (error) {
       console.error(error);
     }
   };
+
+  const saveIncome = async () => {
+  try {
+    await api.post("/income", {
+      month: selectedMonth,
+      income: Number(incomeInput),
+    });
+
+    setIncome(Number(incomeInput));
+
+    setShowIncomeModal(false);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   useEffect(() => {
     fetchProfile();
@@ -78,6 +107,7 @@ function Dashboard() {
 
   useEffect(() => {
     fetchBudget();
+    fetchIncome();
   }, [selectedMonth]);
 
   //Filtering
@@ -93,7 +123,7 @@ function Dashboard() {
     0,
   );
 
-  const remaining = (budget ?? 0) - totalExpenses;
+  const remaining = (income ?? 0) - totalExpenses;
 
   //Analytics
 
@@ -231,63 +261,101 @@ function Dashboard() {
       </div>
 
       <div className="stats-grid">
-        <StatCard title="Income" value={`₹${income}`} icon="💰" />
+        <StatCard
+  title="Income"
+  value={
+    income !== null
+      ? `₹${income.toLocaleString("en-IN")}`
+      : "Not Set"
+  }
+  buttonText={income === null ? "Set Income" : "Edit"}
+  onButtonClick={() => {
+  setIncomeInput(income?.toString() ?? "");
+  setShowIncomeModal(true);
+}}
+  icon="💰"
+/>
 
-        <StatCard title="Budget" value={`₹${budget}`} icon="🐷" />
+<StatCard
+  title="Budget"
+  value={
+    budget !== null
+      ? `₹${budget.toLocaleString("en-IN")}`
+      : "Not Set"
+  }
+  buttonText={budget === null ? "Set Budget" : "Edit"}
+  onButtonClick={() => {
+  setBudgetInput(budget?.toString() ?? "");
+  setShowBudgetModal(true);
+}}
+  icon="🐷"
+/>
 
-        <StatCard title="Expenses" value={`₹${totalExpenses}`} icon="💸" />
+        
 
-        <StatCard title="Remaining" value={`₹${remaining}`} icon="✨" />
+        <StatCard
+          title="Expenses"
+          value={`₹${totalExpenses.toLocaleString("en-IN")}`}
+          icon="💸"
+        />
+
+        <StatCard
+          title="Remaining"
+          value={`₹${remaining.toLocaleString("en-IN")}`}
+          icon="✨"
+        />
       </div>
 
       <div className="analytics-section">
-       <div className="analytics-card">
+        <div className="analytics-card">
+          <h3>Expense Distribution</h3>
 
-  <h3>Expense Distribution</h3>
+          <div className="analytics-content">
+            <ExpensePieChart data={pieChartData} />
 
-  <div className="analytics-content">
+            <div className="analytics-insights">
+              <div className="mini-card">
+                <h4>🛍 Highest Spending Category</h4>
 
-    <ExpensePieChart data={pieChartData} />
+                <h2>{highestSpendingCategory[0]}</h2>
 
-    <div className="analytics-insights">
+                <p>₹{highestSpendingCategory[1]}</p>
 
-      <div className="mini-card">
+                <small>{getCategoryMessage(highestSpendingCategory[0])}</small>
+              </div>
 
-        <h4>🛍 Highest Spending Category</h4>
+              <div
+                className="mini-card clickable"
+                onClick={() => setShowHighestSpendingDayModal(true)}
+              >
+                <h4>🗓️ Highest Spending Day</h4>
 
-        <h2>{highestSpendingCategory[0]}</h2>
+                <h2>{formattedHighestDay}</h2>
 
-        <p>₹{highestSpendingCategory[1]}</p>
+                <p>₹{highestSpendingDay[1]}</p>
 
-        <small>
-          {getCategoryMessage(highestSpendingCategory[0])}
-        </small>
-
+                <small>View Transactions →</small>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div
-        className="mini-card clickable"
-        onClick={() =>
-          setShowHighestSpendingDayModal(true)
-        }
-      >
+      <IncomeModal
+  isOpen={showIncomeModal}
+  onClose={() => setShowIncomeModal(false)}
+  onSave={saveIncome}
+  income={incomeInput}
+  setIncome={setIncomeInput}
+/>
 
-        <h4>🗓️ Highest Spending Day</h4>
-
-        <h2>{formattedHighestDay}</h2>
-
-        <p>₹{highestSpendingDay[1]}</p>
-
-        <small>View Transactions →</small>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</div>
-      </div>
+<BudgetModal
+  isOpen={showBudgetModal}
+  onClose={() => setShowBudgetModal(false)}
+  onSave={saveBudget}
+  budget={budgetInput}
+  setBudget={setBudgetInput}
+/>
 
       <HighestSpendingDayModal
         isOpen={showHighestSpendingDayModal}

@@ -203,12 +203,7 @@ function Transactions() {
 
     </div>
 
-    <button
-      className="add-expense-btn"
-      onClick={() => setShowForm(true)}
-    >
-      + Add Expense
-    </button>
+    
 
   </div>
 
@@ -226,6 +221,7 @@ function Transactions() {
       monthOptions={monthOptions}
       sortBy={sortBy}
       setSortBy={setSortBy}
+      onAddExpense={() => setShowForm(true)}
     />
 
   </div>
@@ -233,7 +229,7 @@ function Transactions() {
   <div className="table-summary">
 
     <span className="summary-text">
-      ₹{totalSpent} Spent • {filteredExpenses.length} Transactions
+      ₹{totalSpent.toLocaleString("en-IN")} Spent • {filteredExpenses.length} Transactions
     </span>
 
   </div>
