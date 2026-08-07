@@ -10,9 +10,15 @@ import "../styles/transactions.css";
 
 function Transactions() {
   //State variables
-  const [selectedMonth, setSelectedMonth] = useState(
-    new Date().toISOString().slice(0, 7),
-  );
+  const today = new Date();
+
+const [selectedMonth, setSelectedMonth] = useState(
+  String(today.getMonth() + 1).padStart(2, "0")
+);
+
+const [selectedYear, setSelectedYear] = useState(
+  today.getFullYear().toString()
+);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState<SortOption>("Newest");
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -110,19 +116,38 @@ function Transactions() {
     }
   };
 
-  //Filtering
+  const months = [
+  { value: "01", label: "January" },
+  { value: "02", label: "February" },
+  { value: "03", label: "March" },
+  { value: "04", label: "April" },
+  { value: "05", label: "May" },
+  { value: "06", label: "June" },
+  { value: "07", label: "July" },
+  { value: "08", label: "August" },
+  { value: "09", label: "September" },
+  { value: "10", label: "October" },
+  { value: "11", label: "November" },
+  { value: "12", label: "December" },
+];
 
-  const monthOptions = [
-    ...new Set(expenses.map((expense) => expense.expense_date.slice(0, 7))),
-  ]
-    .sort()
-    .reverse();
+const currentYear = new Date().getFullYear();
+
+const years = [];
+
+for (let year = currentYear - 2; year <= currentYear + 2; year++) {
+  years.push(year.toString());
+}
+
+const selectedMonthYear = `${selectedYear}-${selectedMonth}`;
+
+  //Filtering
 
   const filteredExpenses = expenses
   .filter((expense) => {
     const matchesMonth =
       selectedMonth === "" ||
-      expense.expense_date.startsWith(selectedMonth);
+      expense.expense_date.startsWith(selectedMonthYear);
 
     const matchesCategory =
       selectedCategory === "All" ||
@@ -175,10 +200,10 @@ function Transactions() {
   const currentExpenses = filteredExpenses.slice(startIndex, endIndex);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedMonth, selectedCategory, sortBy]);
+  setCurrentPage(1);
+}, [selectedMonth, selectedYear, selectedCategory, sortBy]);
 
-  const formattedMonth = new Date(`${selectedMonth}-01`).toLocaleDateString(
+  const formattedMonth = new Date(`${selectedMonthYear}-01`).toLocaleDateString(
   "en-IN",
   {
     month: "long",
@@ -214,15 +239,23 @@ function Transactions() {
   <div className="filter-row">
 
     <TransactionFilters
-      selectedMonth={selectedMonth}
-      setSelectedMonth={setSelectedMonth}
-      selectedCategory={selectedCategory}
-      setSelectedCategory={setSelectedCategory}
-      monthOptions={monthOptions}
-      sortBy={sortBy}
-      setSortBy={setSortBy}
-      onAddExpense={() => setShowForm(true)}
-    />
+  selectedMonth={selectedMonth}
+  setSelectedMonth={setSelectedMonth}
+
+  selectedYear={selectedYear}
+  setSelectedYear={setSelectedYear}
+
+  months={months}
+  years={years}
+
+  selectedCategory={selectedCategory}
+  setSelectedCategory={setSelectedCategory}
+
+  sortBy={sortBy}
+  setSortBy={setSortBy}
+
+  onAddExpense={() => setShowForm(true)}
+/>
 
   </div>
 

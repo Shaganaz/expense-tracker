@@ -1,0 +1,51 @@
+.settings-container {
+  padding: 35px;
+  background: #fff7fa;
+  min-height: 100vh;
+}
+
+.settings-card {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  margin-top: 24px;
+  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.08);
+}
+
+.settings-card h2 {
+  color: #d9468f;
+  margin-bottom: 20px;
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 18px 0;
+}
+
+.settings-row button {
+  margin-left: 20px;
+  background: #fde7f2;
+  border: none;
+  color: #d9468f;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 14px;
+  background: #e11d48;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #be123c;
+}

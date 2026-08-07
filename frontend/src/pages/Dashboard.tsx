@@ -10,12 +10,6 @@ import type { Expense } from "../types/transactions";
 import "../styles/dashboard.css";
 
 function Dashboard() {
-  //fetching userProfile
-  const [user, setUser] = useState<{
-    id: number;
-    email: string;
-  } | null>(null);
-
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [budget, setBudget] = useState<number | null>(null);
   const [budgetInput, setBudgetInput] = useState("");
@@ -23,36 +17,16 @@ function Dashboard() {
   const [showIncomeModal, setShowIncomeModal] = useState(false);
   const [showBudgetModal, setShowBudgetModal] = useState(false);
 
-const [incomeInput, setIncomeInput] = useState("");
+  const [incomeInput, setIncomeInput] = useState("");
   const [showHighestSpendingDayModal, setShowHighestSpendingDayModal] =
     useState(false);
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().toISOString().slice(0, 7),
   );
 
-  //API Calls
-  const fetchProfile = async () => {
-    try {
-      const response = await api.get("/auth/profile");
-      setUser(response.data.user);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const fetchExpenses = async () => {
-    try {
-      const response = await api.get("/expenses");
-      setExpenses(response.data.expenses);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   const fetchBudget = async () => {
     try {
       const response = await api.get(`/budget/${selectedMonth}`);
-
       setBudget(response.data.budget);
     } catch (error) {
       console.error(error);
@@ -60,56 +34,59 @@ const [incomeInput, setIncomeInput] = useState("");
   };
 
   const fetchIncome = async () => {
-  try {
-    const response = await api.get(`/income/${selectedMonth}`);
+    try {
+      const response = await api.get(`/income/${selectedMonth}`);
+      setIncome(response.data.income);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-    setIncome(response.data.income);
+  const fetchExpenses = async () => {
+  try {
+    const response = await api.get("/expenses");
+    setExpenses(response.data.expenses);
   } catch (error) {
     console.error(error);
   }
 };
 
+  const saveIncome = async () => {
+    try {
+      await api.post("/income", {
+        month: selectedMonth,
+        income: Number(incomeInput),
+      });
+
+      setIncome(Number(incomeInput));
+      setShowIncomeModal(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const saveBudget = async () => {
     try {
       await api.post("/budget", {
         month: selectedMonth,
-
         budget: Number(budgetInput),
       });
 
       setBudget(Number(budgetInput));
-
       setShowBudgetModal(false);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const saveIncome = async () => {
-  try {
-    await api.post("/income", {
-      month: selectedMonth,
-      income: Number(incomeInput),
-    });
-
-    setIncome(Number(incomeInput));
-
-    setShowIncomeModal(false);
-  } catch (error) {
-    console.error(error);
-  }
-};
-
   useEffect(() => {
-    fetchProfile();
-    fetchExpenses();
-  }, []);
+  fetchExpenses();
+}, []);
 
-  useEffect(() => {
-    fetchBudget();
-    fetchIncome();
-  }, [selectedMonth]);
-
+useEffect(() => {
+  fetchBudget();
+  fetchIncome();
+}, [selectedMonth]);
   //Filtering
   const filteredExpenses = selectedMonth
     ? expenses.filter((expense) =>
@@ -123,7 +100,7 @@ const [incomeInput, setIncomeInput] = useState("");
     0,
   );
 
-  const remaining = (income ?? 0) - totalExpenses;
+  const remaining = (budget ?? 0) - totalExpenses;
 
   //Analytics
 
@@ -237,7 +214,6 @@ const [incomeInput, setIncomeInput] = useState("");
         return "💰 Keep tracking your expenses!";
     }
   };
-
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -262,36 +238,30 @@ const [incomeInput, setIncomeInput] = useState("");
 
       <div className="stats-grid">
         <StatCard
-  title="Income"
-  value={
-    income !== null
-      ? `₹${income.toLocaleString("en-IN")}`
-      : "Not Set"
-  }
-  buttonText={income === null ? "Set Income" : "Edit"}
-  onButtonClick={() => {
-  setIncomeInput(income?.toString() ?? "");
-  setShowIncomeModal(true);
-}}
-  icon="💰"
-/>
+          title="Income"
+          value={
+            income !== null ? `₹${income.toLocaleString("en-IN")}` : "Not Set"
+          }
+          buttonText={income === null ? "Set Income" : "Edit"}
+          onButtonClick={() => {
+            setIncomeInput(income?.toString() ?? "");
+            setShowIncomeModal(true);
+          }}
+          icon="💰"
+        />
 
-<StatCard
-  title="Budget"
-  value={
-    budget !== null
-      ? `₹${budget.toLocaleString("en-IN")}`
-      : "Not Set"
-  }
-  buttonText={budget === null ? "Set Budget" : "Edit"}
-  onButtonClick={() => {
-  setBudgetInput(budget?.toString() ?? "");
-  setShowBudgetModal(true);
-}}
-  icon="🐷"
-/>
-
-        
+        <StatCard
+          title="Budget"
+          value={
+            budget !== null ? `₹${budget.toLocaleString("en-IN")}` : "Not Set"
+          }
+          buttonText={budget === null ? "Set Budget" : "Edit"}
+          onButtonClick={() => {
+            setBudgetInput(budget?.toString() ?? "");
+            setShowBudgetModal(true);
+          }}
+          icon="🐷"
+        />
 
         <StatCard
           title="Expenses"
@@ -311,7 +281,13 @@ const [incomeInput, setIncomeInput] = useState("");
           <h3>Expense Distribution</h3>
 
           <div className="analytics-content">
-            <ExpensePieChart data={pieChartData} />
+            {pieChartData.length > 0 ? (
+              <ExpensePieChart data={pieChartData} />
+            ) : (
+              <div className="no-chart">
+                <p>No expenses for this month.</p>
+              </div>
+            )}
 
             <div className="analytics-insights">
               <div className="mini-card">
@@ -342,20 +318,20 @@ const [incomeInput, setIncomeInput] = useState("");
       </div>
 
       <IncomeModal
-  isOpen={showIncomeModal}
-  onClose={() => setShowIncomeModal(false)}
-  onSave={saveIncome}
-  income={incomeInput}
-  setIncome={setIncomeInput}
-/>
+        isOpen={showIncomeModal}
+        onClose={() => setShowIncomeModal(false)}
+        onSave={saveIncome}
+        income={incomeInput}
+        setIncome={setIncomeInput}
+      />
 
-<BudgetModal
-  isOpen={showBudgetModal}
-  onClose={() => setShowBudgetModal(false)}
-  onSave={saveBudget}
-  budget={budgetInput}
-  setBudget={setBudgetInput}
-/>
+      <BudgetModal
+        isOpen={showBudgetModal}
+        onClose={() => setShowBudgetModal(false)}
+        onSave={saveBudget}
+        budget={budgetInput}
+        setBudget={setBudgetInput}
+      />
 
       <HighestSpendingDayModal
         isOpen={showHighestSpendingDayModal}

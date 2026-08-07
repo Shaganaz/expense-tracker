@@ -1,5 +1,4 @@
 import { Doughnut } from "react-chartjs-2";
-
 import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
 
 Chart.register(ArcElement, Tooltip, Legend);
@@ -20,50 +19,50 @@ function ExpensePieChart({ data }: ExpensePieChartProps) {
         data: data.map((item) => item.value),
 
         backgroundColor: [
-  "#F48FB1", // Soft Pink
-  "#B39DDB", // Lavender
-  "#81C784", // Soft Green
-  "#FFCC80", // Peach
-  "#80DEEA", // Light Aqua
-  "#EF9A9A", // Soft Coral
-],
+          "#F48FB1",
+          "#B39DDB",
+          "#81C784",
+          "#FFCC80",
+          "#80DEEA",
+          "#EF9A9A",
+        ],
 
-borderColor: "#FFFFFF",
-borderWidth: 2,
+        borderColor: "#FFFFFF",
+        borderWidth: 2,
       },
     ],
   };
 
   const options = {
-  responsive: true,
-  maintainAspectRatio: false,
+    responsive: true,
+    maintainAspectRatio: false,
 
-  cutout: "65%",
+    cutout: "65%",
 
-  plugins: {
-    legend: {
-      position: "bottom" as const,
+    plugins: {
+      legend: {
+        position: "bottom" as const,
 
-      labels: {
-        usePointStyle: true,
-        pointStyle: "circle",
-        padding: 20,
-        font: {
-          size: 13,
+        labels: {
+          usePointStyle: true,
+          pointStyle: "circle" as const,
+          padding: 20,
+          font: {
+            size: 13,
+          },
         },
       },
     },
-  },
-};
+  };
 
   return (
-  <div className="pie-chart-wrapper">
-    <Doughnut
-      data={chartData}
-      options={options}
-    />
-  </div>
-);
+    <div className="pie-chart-wrapper">
+      <Doughnut
+        data={chartData}
+        options={options}
+      />
+    </div>
+  );
 }
 
 export default ExpensePieChart;

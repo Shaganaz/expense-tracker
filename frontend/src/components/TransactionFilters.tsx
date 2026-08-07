@@ -5,13 +5,21 @@ type TransactionFiltersProps = {
   selectedMonth: string;
   setSelectedMonth: (value: string) => void;
 
+  selectedYear: string;
+  setSelectedYear: (value: string) => void;
+
+  months: {
+    value: string;
+    label: string;
+  }[];
+
+  years: string[];
+
   selectedCategory: string;
   setSelectedCategory: (value: string) => void;
 
   sortBy: SortOption;
   setSortBy: (value: SortOption) => void;
-
-  monthOptions: string[];
 
   onAddExpense: () => void;
 };
@@ -19,11 +27,14 @@ type TransactionFiltersProps = {
 function TransactionFilters({
   selectedMonth,
   setSelectedMonth,
+   selectedYear,
+  setSelectedYear,
+  months,
+  years,
   selectedCategory,
   setSelectedCategory,
   sortBy,
   setSortBy,
-  monthOptions,
   onAddExpense,
 }: TransactionFiltersProps) {
   return (
@@ -32,24 +43,33 @@ function TransactionFilters({
       <div className="filter-row">
 
     <select
-    className="month-select"
-      value={selectedMonth}
-      onChange={(e) => setSelectedMonth(e.target.value)}
+  value={selectedMonth}
+  onChange={(e) => setSelectedMonth(e.target.value)}
+>
+  {months.map((month) => (
+    <option
+      key={month.value}
+      value={month.value}
     >
-      {monthOptions.map((month) => (
-        <option key={month} value={month}>
-          {new Date(`${month}-01`).toLocaleDateString("en-IN", {
-            month: "long",
-            year: "numeric",
-          })}
-        </option>
-      ))}
-    </select>
+      {month.label}
+    </option>
+  ))}
+</select>
 
       <select
-        value={selectedCategory}
-        onChange={(e) => setSelectedCategory(e.target.value)}
-      >
+  value={selectedYear}
+  onChange={(e) => setSelectedYear(e.target.value)}
+>
+  {years.map((year) => (
+    <option
+      key={year}
+      value={year}
+    >
+      {year}
+    </option>
+  ))}
+</select>
+<select>
         <option value="All">All Categories</option>
         <option value="Food">🍕 Food</option>
         <option value="Travel">✈️Travel</option>
