@@ -87,18 +87,188 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-//profile function
-export const getProfile = async (req: AuthRequest, res: Response) => {
+// Get profile
+export const getProfile = async (
+  req: AuthRequest,
+  res: Response
+) => {
   try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const [users] = await pool.query(
+      "SELECT id, name, email, age FROM users WHERE id = ?",
+      [userId]
+    ) as RowDataPacket[];
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
     res.json({
       success: true,
-      user: req.user,
+      user: users[0],
     });
+
   } catch (error) {
     console.error(error);
 
     res.status(500).json({
       success: false,
+      message: "Server error",
+    });
+  }
+};
+
+// Update profile
+export const updateProfile = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    const userId = req.user?.id;
+    const { name, email, age } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    if (!name || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Name and email are required",
+      });
+    }
+
+    // Check whether email belongs to another user
+    const [existingUsers] = await pool.query(
+      "SELECT id FROM users WHERE email = ? AND id != ?",
+      [email, userId]
+    ) as RowDataPacket[];
+
+    if (existingUsers.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already exists",
+      });
+    }
+
+    await pool.query(
+      "UPDATE users SET name = ?, email = ?, age = ? WHERE id = ?",
+      [
+        name,
+        email,
+        age === "" || age === undefined ? null : age,
+        userId,
+      ]
+    );
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+// Change password
+export const changePassword = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    const userId = req.user?.id;
+
+    const {
+      currentPassword,
+      newPassword,
+    } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Both passwords are required",
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "New password must contain at least 6 characters",
+      });
+    }
+
+    // Get current password
+    const [users] = await pool.query(
+      "SELECT password FROM users WHERE id = ?",
+      [userId]
+    ) as RowDataPacket[];
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Verify current password
+    const isMatch = await bcrypt.compare(
+      currentPassword,
+      users[0].password
+    );
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await pool.query(
+      "UPDATE users SET password = ? WHERE id = ?",
+      [hashedPassword, userId]
+    );
+
+    res.json({
+      success: true,
+      message: "Password changed successfully",
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error",
     });
   }
 };
