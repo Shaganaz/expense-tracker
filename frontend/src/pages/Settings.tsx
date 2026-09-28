@@ -8,7 +8,9 @@ import "../styles/settings.css";
 function Settings() {
 const [user, setUser] = useState<{
   id: number;
+  name: string;
   email: string;
+  age: number | null;
 } | null>(null);
 
 const [income, setIncome] = useState<number | null>(null);
@@ -19,6 +21,11 @@ const [showBudgetModal, setShowBudgetModal] = useState(false);
 
 const [incomeInput, setIncomeInput] = useState("");
 const [budgetInput, setBudgetInput] = useState("");
+const [editProfile, setEditProfile] = useState(false);
+
+const [nameInput, setNameInput] = useState("");
+const [emailInput, setEmailInput] = useState("");
+const [ageInput, setAgeInput] = useState("");
 
 const selectedMonth = new Date().toISOString().slice(0, 7);
 
@@ -60,35 +67,89 @@ useEffect(() => {
 }, []);
 
 const saveBudget = async () => {
-    try {
-      await api.post("/budget", {
-        month: selectedMonth,
+  if (!budgetInput || Number(budgetInput) <= 0) {
+    alert("Please enter a valid budget");
+    return;
+  }
 
-        budget: Number(budgetInput),
-      });
+  try {
+    console.log("Saving budget:", budgetInput);
 
-      setBudget(Number(budgetInput));
+    const response = await api.post("/budget", {
+      month: selectedMonth,
+      budget: Number(budgetInput),
+    });
 
-      setShowBudgetModal(false);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    console.log("Budget response:", response.data);
+
+    setBudget(Number(budgetInput));
+    setShowBudgetModal(false);
+
+    alert("Budget saved successfully!");
+  } catch (error: any) {
+    console.error("Budget save error:", error.response?.data || error);
+    alert(error.response?.data?.message || "Failed to save budget");
+  }
+};
 
   const saveIncome = async () => {
+  if (!incomeInput || Number(incomeInput) <= 0) {
+    alert("Please enter a valid income");
+    return;
+  }
+
   try {
-    await api.post("/income", {
+    console.log("Saving income:", incomeInput);
+
+    const response = await api.post("/income", {
       month: selectedMonth,
       income: Number(incomeInput),
     });
 
-    setIncome(Number(incomeInput));
+    console.log("Income response:", response.data);
 
+    setIncome(Number(incomeInput));
     setShowIncomeModal(false);
-  } catch (error) {
-    console.error(error);
+
+    alert("Income saved successfully!");
+  } catch (error: any) {
+    console.error("Income save error:", error.response?.data || error);
+    alert(error.response?.data?.message || "Failed to save income");
   }
 };
+
+const updateProfile = async () => {
+  if (!nameInput.trim() || !emailInput.trim()) {
+    alert("Name and email are required");
+    return;
+  }
+
+  try {
+    const response = await api.put("/auth/profile", {
+      name: nameInput,
+      email: emailInput,
+      age: ageInput === "" ? null : Number(ageInput),
+    });
+
+    alert(response.data.message);
+
+    // Refresh profile details
+    await fetchProfile();
+
+    setEditProfile(false);
+  } catch (error: any) {
+    console.error(
+      "Profile update error:",
+      error.response?.data || error
+    );
+
+    alert(
+      error.response?.data?.message ||
+      "Failed to update profile"
+    );
+  }
+};
+
 const handleLogout = () => {
   localStorage.removeItem("token");
   navigate("/login");
@@ -102,19 +163,109 @@ return (
 
   <p>Manage your account and preferences.</p>
 
-  <div className="settings-card">
+  <div className="settings-card profile-card">
 
-    <h2>Profile</h2>
+  <div className="profile-header">
+    <div className="profile-avatar">
+      {user?.name?.charAt(0).toUpperCase() || "U"}
+    </div>
 
-    <p><strong>Email</strong></p>
-
-    <span>{user?.email}</span>
-
-    <p><strong>User ID</strong></p>
-
-    <span>{user?.id}</span>
-
+    <div>
+      <h2>Profile</h2>
+      <p>Manage your personal information</p>
+    </div>
   </div>
+
+  {!editProfile ? (
+    <>
+      <div className="profile-details">
+
+        <div className="profile-field">
+          <span className="profile-label">Full Name</span>
+          <span className="profile-value">
+            {user?.name || "Not Set"}
+          </span>
+        </div>
+
+        <div className="profile-field">
+          <span className="profile-label">Email Address</span>
+          <span className="profile-value">
+            {user?.email || "Not Set"}
+          </span>
+        </div>
+
+        <div className="profile-field">
+          <span className="profile-label">Age</span>
+          <span className="profile-value">
+            {user?.age ?? "Not Set"}
+          </span>
+        </div>
+
+        <div className="profile-field">
+          <span className="profile-label">User ID</span>
+          <span className="profile-value readonly">
+            #{user?.id || "—"}
+          </span>
+        </div>
+
+      </div>
+
+      <button
+        className="edit-profile-btn"
+        onClick={() => {
+          setNameInput(user?.name || "");
+          setEmailInput(user?.email || "");
+          setAgeInput(user?.age?.toString() || "");
+          setEditProfile(true);
+        }}
+      >
+        ✏️ Edit Profile
+      </button>
+    </>
+  ) : (
+    <div className="profile-edit-form">
+
+      <label>Full Name</label>
+      <input
+        type="text"
+        value={nameInput}
+        onChange={(e) => setNameInput(e.target.value)}
+      />
+
+      <label>Email Address</label>
+      <input
+        type="email"
+        value={emailInput}
+        onChange={(e) => setEmailInput(e.target.value)}
+      />
+
+      <label>Age</label>
+      <input
+        type="number"
+        value={ageInput}
+        onChange={(e) => setAgeInput(e.target.value)}
+      />
+
+      <div className="profile-edit-buttons">
+        <button
+          className="save-profile-btn"
+          onClick={updateProfile}
+        >
+          Save Changes
+        </button>
+
+        <button
+          className="cancel-profile-btn"
+          onClick={() => setEditProfile(false)}
+        >
+          Cancel
+        </button>
+      </div>
+
+    </div>
+  )}
+
+</div>
 
   <div className="settings-card">
 
